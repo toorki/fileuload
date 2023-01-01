@@ -1,5 +1,5 @@
 import React from 'react';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import axios from 'axios';
 import { toast} from 'react-toastify';
 import ('./Uploader.css');
@@ -10,7 +10,13 @@ export const FileUploader = ({onSuccess}) => {
         setFiles(e.target.files)
     };
 
-    const onSubmit = (e) => { 
+    useEffect(() => {
+        if (files.length === 0) {
+            updateState()
+        }
+      }, [files]);
+
+    const onSubmit = (e) => {
         e.preventDefault();
 
         const data = new FormData();
@@ -36,16 +42,7 @@ export const FileUploader = ({onSuccess}) => {
     const updateState = () => {
         axios.get("http://localhost:4000/filesAPI/list")
         .then(res => {
-            // setFilesList(res.data.files)
-            // console.log(filesList)
-
-            var files = res.data.files.map(f => {
-                console.log(f.file.buffer)
-                let file = new Blob([f.file.buffer], { type: f.file.content_type })
-                let url = URL.createObjectURL(file)
-                return {name: f.name, img: url}
-            })
-            setFilesList(files)
+            setFilesList(res.data.files)
         })
         .catch((err) => {
             console.log(err)
@@ -64,7 +61,7 @@ export const FileUploader = ({onSuccess}) => {
         </form>
         <div>
         {filesList.map(f => {
-            return (<img src={f.img} alt={f.name} />)
+            return (<img src={`http://localhost:4000/${f.originalname}`} alt={f.originalname} />)
         })}
         </div>
         </div>
